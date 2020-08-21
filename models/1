@@ -1,0 +1,53 @@
+// var a = {
+// 	meetingRoom: {
+// 		meetingRoomID: '',
+// 		meetingRoomNumber: '',
+// 		meetingRoomFloor: '',
+// 		meetingRoomLocation: '',
+// 		meetingRoomSize: '',
+// 		meetingRoomVolume: '',
+// 	},
+// 	subscriber: {
+// 		email: '13652152288@163.com',
+// 		userid: '',
+// 		photo: '',
+// 		department: '',
+// 		level: '1',
+// 	},
+// 	createdBy: {
+// 		email: '13652152288@163.com',
+// 		userid: '',
+// 		photo: '',
+// 		department: '',
+// 		level: '1',
+// 	},
+// 	createdDate: '',
+// 	content: '',
+// 	startTime: '',
+// 	endTime: '',
+// 	appointDate: '',
+// 	members: [
+// 		{
+// 			email: '13652152288@163.com',
+// 			userid: '',
+// 			photo: '',
+// 			department: '',
+// 			level: '1',
+// 		},
+// 		{
+// 			email: '13652152288@163.com',
+// 			userid: '',
+// 			photo: '',
+// 			department: '',
+// 			level: '',
+// 		},
+// 	],
+// 	modifyBy: {
+// 		email: '13652152288@163.com',
+// 		userid: '',
+// 		photo: '',
+// 		department: '',
+// 		level: '1',
+// 	},
+// 	modifyDate: '',
+// }
