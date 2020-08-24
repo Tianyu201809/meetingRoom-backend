@@ -7,6 +7,7 @@ var jwt = require('jsonwebtoken')
 
 var appointRouter = require('./routes/appointment')
 var usersRouter = require('./routes/users')
+var meetingRoomRouter = require('./routes/meetingRoom')
 
 var app = express()
 
@@ -46,13 +47,11 @@ app.all('*', (req, res, next) => {
 	next()
 })
 
-
-
 //请求接口时需要token，白名单的接口不需要token
 app.all('*', function (req, res, next) {
 	let method = req.method.toLowerCase() //获取请求方式，并打印成小写
-    let path = req.path //获取当前请求路径
-    console.log(path)
+	let path = req.path //获取当前请求路径
+	console.log(path)
 	if (whiteListUrl[method] && hasOneOf(path, whiteListUrl[method])) {
 		//过滤，白名单的不需要接口认证
 		next()
@@ -79,7 +78,7 @@ app.all('*', function (req, res, next) {
 
 app.use('/users', usersRouter)
 app.use('/appointment', appointRouter)
-
+app.use('/meetingRoom', meetingRoomRouter)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -96,13 +95,11 @@ app.use(function (err, req, res, next) {
 	res.status(err.status || 500)
 })
 
-
-
 //设置的白名单接口列表
 const whiteListUrl = {
 	get: ['/getUserInfo', '/users/getUserEmail/'],
-    post: ['/users/login/','/users/register/','/users/getUserEmail/'],
-    options:['/users/login/','/users/register/','/users/getUserEmail/']
+	post: ['/users/login/', '/users/register/', '/users/getUserEmail/'],
+	options: ['/users/login/', '/users/register/', '/users/getUserEmail/'],
 }
 const hasOneOf = (str, arr) => {
 	return arr.some((item) => item.includes(str))

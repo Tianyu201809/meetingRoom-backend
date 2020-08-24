@@ -67,7 +67,6 @@ router.post('/updateAppoItem', function (req, res, next) {
 	//1.通过传递过来的参数，查询所有预约信息
 	//2.查询mongodb中的信息
 })
-module.exports = router
 
 /**
  * 数据库操作
@@ -153,10 +152,12 @@ async function queryUserJoinedMeeting({
 	})
 }
 
+/**
+ * index页面中 当日会议模块的 数量条目总数获取接口
+ */
 router.get('/queryUserJoinedMeetingCount', (req, res, next) => {
-    debugger;
-    const query = qs.parse(req.query)
-    console.log(query)
+	const query = qs.parse(req.query)
+	console.log(query)
 	queryUserJoinedMeetingCount(query).then((count) => {
 		res.send({
 			code: 200,
@@ -166,7 +167,7 @@ router.get('/queryUserJoinedMeetingCount', (req, res, next) => {
 })
 
 //作用于index页面中的今日会议部分的分页
-async function queryUserJoinedMeetingCount({meetingDate, email}) {
+async function queryUserJoinedMeetingCount({ meetingDate, email }) {
 	return new Promise((resolve, reject) => {
 		appointment.countDocuments(
 			{
@@ -178,14 +179,61 @@ async function queryUserJoinedMeetingCount({meetingDate, email}) {
 				},
 			},
 			(err, result) => {
-                console.log(result);
-                if(err){
-                    resolve(0)
-                }else{
-                    resolve(result)
-                }
+				console.log(result)
+				if (err) {
+					resolve(0)
+				} else {
+					resolve(result)
+				}
 			}
 		)
+	})
+}
+
+/**
+ * index页面查询当日会议显示条目接口
+ * 默认显示3条数据
+ * 支持分页查询
+ */
+router.get('/queryUserJoinedMeetingItems', (req, res, next) => {
+	queryUserJoinedMeetingItems(qs.parse(req.query))
+		.then((result) => {
+			res.send({
+				code: 200,
+				data: result,
+			})
+		})
+		.catch((error) => {
+			res.send({
+				code: 400,
+				data: error,
+			})
+		})
+})
+
+//查询函数
+async function queryUserJoinedMeetingItems({
+	email,
+	meetingDate,
+	skip = 0,
+	limit = 3,
+}) {
+	return new Promise((resolve, reject) => {
+		appointment
+			.find({
+				email: email,
+				meetingDate: meetingDate,
+			})
+			.skip(parseInt(skip))
+			.limit(parseInt(limit))
+			.sort('-1')
+			.exec((err, result) => {
+				if (err) {
+					reject('查询当日会议数据失败')
+				} else {
+					resolve(result)
+				}
+			})
 	})
 }
 
@@ -197,3 +245,5 @@ async function queryUserJoinedMeetingCount({meetingDate, email}) {
 async function deleteAppoItems(_itemId) {
 	return new Promise((resolve, reject) => {})
 }
+
+module.exports = router
