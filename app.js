@@ -76,8 +76,9 @@ app.all('*', function (req, res, next) {
 		}
 	}
 })
-app.use('/', appointRouter)
+
 app.use('/users', usersRouter)
+app.use('/appointment', appointRouter)
 
 
 // catch 404 and forward to error handler

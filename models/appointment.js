@@ -3,17 +3,17 @@ const Schema = mongoose.Schema
 const appointment = new Schema({
 	//会议室编号
 	meetingRoom: {
-        type: Object,
+        type: String,
         require:true
     },
     status:String,
 	//订阅者
 	subscriber: {
-		type: Object,
+		type: String,  //使用订阅者邮箱
 	},
 	//创建人
 	createdBy: {
-		type: Object,
+		type: String, //使用订阅者邮箱
 	},
 	//创建日期
 	createdDate: {
@@ -41,12 +41,12 @@ const appointment = new Schema({
 	},
 	//最后修改人
 	modifyBy: {
-		type: Object,
+		type: String, //使用邮箱
 	},
 	//最后修改时间
 	modifyDate: {
 		type: Date,
-		default: Date.now,
+		default: Date.now
 	},
 })
 //直接导出模型构造函数
