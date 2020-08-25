@@ -9,13 +9,13 @@ const qs = require('qs')
 
 //查询所有会议室条目接口
 router.get('/queryMeetingRoomsList', (req, res, next) => {
-    queryMeetingRoomsList().then(result => {
-        console.log(result);
-        res.send({
-            code:200,
-            data:result
-        })
-    })
+	queryMeetingRoomsList().then((result) => {
+		console.log(result)
+		res.send({
+			code: 200,
+			data: result,
+		})
+	})
 })
 
 async function queryMeetingRoomsList() {
@@ -29,6 +29,55 @@ async function queryMeetingRoomsList() {
 			}
 		})
 	})
+}
+
+/**
+ * 添加meeting room
+ */
+
+router.post('/addMeetingRoom', (req, res, next) => {
+	addMeetingRoom(req.body)
+		.then((data) => {
+            res.send({
+                code:200,
+                data:data
+            })
+        })
+		.catch((e) => {
+            res.send({
+                code:400,
+                data:null
+            })
+			console.log(e)
+		})
+})
+async function addMeetingRoom(meetingRoomInfo) {
+	return new Promise((resolve, reject) => {
+		let meetingRoomInstance = new meetingRoom(meetingRoomInfo) || null
+		meetingRoom.create(meetingRoomInstance, (err, data) => {
+			if (err) {
+				reject(err)
+			} else {
+				resolve(data)
+			}
+		})
+	})
+}
+
+/**
+ * 删除会议室信息
+ */
+router.post('/deleteMeetingRoomInfo', (req, res, next) => {})
+async function deleteMeetingRoomInfo() {
+	return new Promise((resolve, reject) => {})
+}
+
+/**
+ * 修改会议室信息
+ */
+router.post('/updateMeetingRoomInfo', (req, res, next) => {})
+async function updateMeetingRoomInfo() {
+	return new Promise((resolve, reject) => {})
 }
 
 module.exports = router

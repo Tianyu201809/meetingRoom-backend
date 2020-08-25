@@ -2,18 +2,18 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const appointment = new Schema({
 	//会议室编号
-	meetingRoom: {
+	meetingRoomNumber: {
         type: String,
         require:true
     },
     status:String,
 	//订阅者
 	subscriber: {
-		type: String,  //使用订阅者邮箱
+		type: String,  //使用订阅者邮箱/用户名两个值
 	},
 	//创建人
 	createdBy: {
-		type: String, //使用订阅者邮箱
+		type: Object, //使用订阅者邮箱/用户名两个值
 	},
 	//创建日期
 	createdDate: {

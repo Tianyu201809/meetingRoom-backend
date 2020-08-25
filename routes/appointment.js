@@ -32,12 +32,12 @@ router.get('/getAppoList', function (req, res, next) {
 /**
  * 添加预约信息接口
  */
-router.post('/addAppoItem', function (req, res, next) {
+router.post('/createAppointment', function (req, res, next) {
 	//1.通过传递过来的参数，查询所有预约信息
 	//2.查询mongodb中的信息
 	const parms = req.body ? new Appoint(req.body) : null
 	if (!parms) return '添加预约失败，请填写正确参数'
-	addAppoItem(parms)
+	createAppointment(parms)
 		.then(function (msg) {
 			res.send(msg)
 		})
@@ -73,7 +73,7 @@ router.post('/updateAppoItem', function (req, res, next) {
  * @param {Object}} item
  */
 //插入会议预约信息
-async function addAppoItem(item) {
+async function createAppointment(item) {
 	return new Promise(function (resolve, reject) {
 		Appoint.create(item, function (err, docs) {
 			if (err) {
