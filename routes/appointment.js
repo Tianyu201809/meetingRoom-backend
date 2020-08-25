@@ -16,7 +16,7 @@ const jwt = require('jsonwebtoken')
 //用于会议预约查询页面
 router.get('/getAppoList', function (req, res, next) {
 	//1.通过传递过来的参数，查询所有预约信息
-	const query = req.query //获取url地址上的参数 query是查询条件
+	let query = req.query //获取url地址上的参数 query是查询条件
 	//2.查询mongodb中的信息
 	query = qs.parse(query)
 	queryAppoList(query)
@@ -28,7 +28,46 @@ router.get('/getAppoList', function (req, res, next) {
 			res.send(e)
 		})
 })
-
+async function queryAppoList(
+	{ title, meetingDate, meetingRoomNumber },
+	skip = 0,
+	limit = 10
+) {
+	return new Promise((resolve, reject) => {
+		// {
+		//     $and: [
+		//         { title: title },
+		//         { meetingDate: meetingDate },
+		//         { meetingRoomNumber: meetingRoomNumber },
+		//     ],
+		// }
+		let filterVal = {
+			title,
+			meetingDate,
+			meetingRoomNumber,
+		}
+		if (!title) {
+			delete filterVal.title
+		}
+		if (!meetingDate) {
+			delete filterVal.meetingDate
+		}
+		if (!meetingRoomNumber) {
+			delete filterVal.meetingRoomNumber
+		}
+		appointment
+			.find(filterVal)
+			.skip(parseInt(skip))
+			.limit(parseInt(limit))
+			.exec((err, data) => {
+				if (err) {
+					reject('获取appointment列表失败')
+				} else {
+					resolve(data)
+				}
+			})
+	})
+}
 /**
  * 添加预约信息接口
  */
@@ -89,21 +128,32 @@ async function createAppointment(item) {
 //查询所有的条目
 
 router.get('/getQueryListCount', (req, res, next) => {
-	getQueryDataCount().then((count) => {
-		res.send(count) //如果没有获取到的话，返回0
+	//req.parse
+	const filter = qs.parse(req.query)
+	getQueryDataCount(filter).then((count) => {
+		res.send({
+			code: 200,
+			count: count,
+		}) //如果没有获取到的话，返回0
 	})
 })
 
 //获取查询数据的总体数量
-async function getQueryDataCount() {
+async function getQueryDataCount({ title, meetingDate }) {
 	return new Promise(function (resolve, reject) {
-		appointment.count(null, function (err, result) {
-			if (error) {
-				resolve(0)
+		appointment.countDocuments(
+			{
+				title,
+				meetingDate,
+			},
+			function (err, result) {
+				if (err) {
+					resolve(0)
+				}
+				console.log(result)
+				resolve(result)
 			}
-			console.log(result)
-			resolve(result)
-		})
+		)
 	})
 }
 
