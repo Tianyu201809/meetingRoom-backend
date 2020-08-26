@@ -43,8 +43,15 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.all('*', (req, res, next) => {
 	res.header('Access-Control-Allow-Origin', '*')
 	res.header('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type')
-	res.header('Access-Control-Allow-Methods', 'PUT,POST,GET,DELETE,OPTIONS')
-	next()
+    res.header('Access-Control-Allow-Methods', 'PUT,POST,GET,DELETE,OPTIONS')
+    if(req.method == 'OPTIONS'){
+         //让options请求快速返回
+         //options请求是“非简单请求”，请求之前会发送options预检请求
+         res.sendStatus(200);
+    }else{
+        next()
+    }
+	
 })
 
 //请求接口时需要token，白名单的接口不需要token
