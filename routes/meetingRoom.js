@@ -8,8 +8,18 @@ const meetingRoom = require('../models/meetingRoom')
 const qs = require('qs')
 
 //查询所有会议室条目接口
-router.get('/queryMeetingRoomsList', (req, res, next) => {
-	queryMeetingRoomsList().then((result) => {
+router.post('/queryMeetingRoomsList', (req, res, next) => {
+	//filter对象中需要包含 meetingRoomNumber
+	//const filter = qs.parse(req.query)
+	let filter = req.body.data
+	if (!filter) {
+		filter = {
+			skip: '',
+			limit: '',
+			filter: {},
+		}
+	}
+	queryMeetingRoomsList(filter).then((result) => {
 		console.log(result)
 		res.send({
 			code: 200,
@@ -18,15 +28,56 @@ router.get('/queryMeetingRoomsList', (req, res, next) => {
 	})
 })
 
-async function queryMeetingRoomsList() {
+async function queryMeetingRoomsList({ filter = {}, skip = 0, limit = 10 }) {
 	return new Promise((resolve, reject) => {
-		meetingRoom.find({}, (err, data) => {
+		meetingRoom
+			.find(filter)
+			.skip(skip)
+			.limit(limit)
+			.exec((err, data) => {
+				if (err) {
+					console.log(err)
+					reject('获取会议室数据失败')
+				} else {
+					resolve(data)
+				}
+			})
+	})
+}
+
+//根据过滤条件查询会议室条目总数量
+
+router.post('/queryMeetingRoomsCount', (req, res, next) => {
+	const filter = req.body.data
+	queryMeetingRoomsCount(filter).then((result) => {
+		if (parseInt(result.code) === 200) {
+			res.send({
+				code: 200,
+				count: result.count,
+			})
+		} else {
+			res.send({
+				code: 400,
+				count: result.count,
+			})
+		}
+	})
+})
+//查询过滤方法
+async function queryMeetingRoomsCount(filter) {
+	return new Promise((resolve, reject) => {
+		filter ? filter : (filter = {})
+		meetingRoom.countDocuments(filter, (err, result) => {
 			if (err) {
-				console.log(err)
-				reject('获取会议室数据失败')
-			} else {
-				resolve(data)
+				resolve({
+					code: 400,
+					count: null,
+				})
 			}
+			resolve({
+				code: 200,
+				count: result,
+			})
 		})
 	})
 }
@@ -68,7 +119,7 @@ async function addMeetingRoom(meetingRoomInfo) {
  * 删除会议室信息
  */
 router.post('/deleteMeetingRoomInfo', (req, res, next) => {
-    console.log(req.body.meetingRoomId)
+	console.log(req.body.meetingRoomId)
 	deleteMeetingRoomInfo(req.body.meetingRoomId).then((flag) => {
 		if (flag) {
 			res.send({

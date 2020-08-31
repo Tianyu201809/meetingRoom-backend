@@ -2,6 +2,9 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const meetingRoom = new Schema({
 	meetingRoomNumber: {
+        type: String
+    },
+    meetingRoomName: {
 		type: String,
 	},
 	meetingRoomStatus: {
