@@ -35,6 +35,10 @@ const meetingRoom = new Schema({
 			return {}
 		},
 	},
+	description: {
+		type: Object,
+		default:''
+	},
 
 	/**
 	 * 预留字段

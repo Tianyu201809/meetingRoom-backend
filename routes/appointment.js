@@ -139,21 +139,30 @@ router.get('/getQueryListCount', (req, res, next) => {
 })
 
 //获取查询数据的总体数量
-async function getQueryDataCount({ title, meetingDate }) {
+async function getQueryDataCount({ title, meetingDate, meetingRoomNumber }) {
 	return new Promise(function (resolve, reject) {
-		appointment.countDocuments(
-			{
-				title,
-				meetingDate,
-			},
-			function (err, result) {
-				if (err) {
-					resolve(0)
-				}
-				console.log(result)
-				resolve(result)
+		const filter = {
+			title,
+			meetingDate,
+			meetingRoomNumber,
+		}
+		//如果条件为空，则删除过滤条件
+		if (!filter.title) {
+			delete filter.title
+		}
+		if (!filter.meetingDate) {
+			delete filter.meetingDate
+		}
+		if (!filter.meetingRoomNumber) {
+			delete filter.meetingRoomNumber
+		}
+		appointment.countDocuments(filter, function (err, result) {
+			if (err) {
+				resolve(0)
 			}
-		)
+			console.log(result)
+			resolve(result)
+		})
 	})
 }
 

@@ -79,7 +79,6 @@ router.post('/register', function (req, res, next) {
 
 router.post('/login', async function (req, res, next) {
     const {userName, password, email} = req.body;
-
 	if (userName) {
 		const userInfo = await getPasswordByNameAndEmail(req.body)
 		if (!password || userInfo !== password) {

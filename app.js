@@ -67,6 +67,7 @@ app.all('*', function (req, res, next) {
 		if (!token) {
 			res.status(401).send('there is no token, please login')
 		} else {
+            //token验证函数，验证token是否有效 
 			jwt.verify(token, 'abcd', (error, decode) => {
 				if (error) {
 					res.send({
@@ -75,6 +76,7 @@ app.all('*', function (req, res, next) {
 						data: {},
 					})
 				} else {
+                    //将请求对象中的userName属性设置值
 					req.userName = decode.name
 					next()
 				}
