@@ -14,12 +14,14 @@ const jwt = require('jsonwebtoken')
  */
 
 //用于会议预约查询页面
-router.get('/getAppoList', function (req, res, next) {
+router.post('/getAppoList', function (req, res, next) {
 	//1.通过传递过来的参数，查询所有预约信息
-	let query = req.query //获取url地址上的参数 query是查询条件
+	let query = req.body.data.filter //获取url地址上的参数 query是查询条件
+	let limit = req.body.data.limit
+	let skip = req.body.data.skip
 	//2.查询mongodb中的信息
-	query = qs.parse(query)
-	queryAppoList(query)
+	//query = qs.parse(query)
+	queryAppoList(query, skip, limit)
 		.then(function (data) {
 			console.log(data)
 			res.send(data)
@@ -84,20 +86,56 @@ router.post('/createAppointment', function (req, res, next) {
 			res.send(e)
 		})
 })
+//插入会议预约信息
+async function createAppointment(item) {
+	return new Promise(function (resolve, reject) {
+		Appoint.create(item, function (err, docs) {
+			if (err) {
+				reject('会议预定失败')
+			} else {
+				resolve('会议预定成功')
+			}
+		})
+	})
+}
 
 /**
  * 删除预约信息接口（）
  */
-router.post('/deleteAppoItems', function (req, res, next) {
+router.post('/deleteAppointmentItem', function (req, res, next) {
 	//1.通过传递过来的参数，查询所有预约信息
 	//2.查询mongodb中的信息
-	const itemId = req.body
+	const itemId = req.body.id
 	deleteAppoItems(itemId)
-		.then((data) => {})
+		.then((data) => {
+			res.send({
+				code: 200,
+				data: data,
+			})
+		})
 		.catch((e) => {
-			res.send(e)
+			res.send({
+				code: 400,
+				data: e,
+			})
 		})
 })
+//删除预约
+async function deleteAppoItems(_itemId) {
+	return new Promise((resolve, reject) => {
+		appointment.deleteOne(
+			{
+				_id: _itemId,
+			},
+			(err, result) => {
+				if (err) reject(err)
+				else {
+					resolve(result)
+				}
+			}
+		)
+	})
+}
 
 /**
  * 修改预约信息接口
@@ -111,18 +149,6 @@ router.post('/updateAppoItem', function (req, res, next) {
  * 数据库操作
  * @param {Object}} item
  */
-//插入会议预约信息
-async function createAppointment(item) {
-	return new Promise(function (resolve, reject) {
-		Appoint.create(item, function (err, docs) {
-			if (err) {
-				reject('会议预定失败')
-			} else {
-				resolve('会议预定成功')
-			}
-		})
-	})
-}
 
 //获取查询的数据数量
 //查询所有的条目
@@ -294,15 +320,6 @@ async function queryUserJoinedMeetingItems({
 				}
 			})
 	})
-}
-
-/**
- * 删除数据相关接口
- * @param {*} _itemId
- */
-//删除数据
-async function deleteAppoItems(_itemId) {
-	return new Promise((resolve, reject) => {})
 }
 
 module.exports = router

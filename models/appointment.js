@@ -2,14 +2,17 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const appointment = new Schema({
 	//会议室编号
+	title: {
+		type: String,
+	},
 	meetingRoomNumber: {
-        type: String,
-        require:true
-    },
-    status:String,
+		type: String,
+		require: true,
+	},
+	status: String,
 	//订阅者
 	subscriber: {
-		type: String,  //使用订阅者邮箱/用户名两个值
+		type: String, //使用订阅者邮箱/用户名两个值
 	},
 	//创建人
 	createdBy: {
@@ -46,7 +49,15 @@ const appointment = new Schema({
 	//最后修改时间
 	modifyDate: {
 		type: Date,
-		default: Date.now
+		default: Date.now,
+	},
+	//备注
+	description: {
+		type: String,
+	},
+	//部门
+	department: {
+		type: String,
 	},
 })
 //直接导出模型构造函数

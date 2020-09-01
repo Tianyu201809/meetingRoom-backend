@@ -149,9 +149,76 @@ async function deleteMeetingRoomInfo(_id) {
 /**
  * 修改会议室信息
  */
-router.post('/updateMeetingRoomInfo', (req, res, next) => {})
-async function updateMeetingRoomInfo() {
-	return new Promise((resolve, reject) => {})
+router.post('/updateMeetingRoomDetail', (req, res, next) => {
+    const id = req.body.id
+    const obj = req.body.modify
+	updateMeetingRoomDetail(id, obj)
+		.then((result) => {
+			res.send({
+				code: 200,
+				data: result,
+			})
+		})
+		.catch((e) => {
+			res.send({
+				code: 400,
+				data: e,
+			})
+		})
+})
+async function updateMeetingRoomDetail(id, obj) {
+	return new Promise((resolve, reject) => {
+		meetingRoom.updateOne(
+			{
+				_id: id,
+			},
+			{ $set: obj },
+			(err, data) => {
+				if (err) reject(err)
+				else {
+					resolve(data)
+				}
+			}
+		)
+	})
+}
+
+/**
+ * 查询会议室详细信息
+ */
+
+router.get('/queryMeetingRoomDetail', (req, res, next) => {
+	const id = req.query['id']
+	console.log(id)
+	queryMeetingRoomDetail(id)
+		.then((result) => {
+			res.send({
+				code: 200,
+				data: result,
+			})
+		})
+		.catch((err) => {
+			res.send({
+				code: 400,
+				data: err,
+			})
+		})
+})
+
+async function queryMeetingRoomDetail(id) {
+	return new Promise((resolve, reject) => {
+		meetingRoom.findOne(
+			{
+				_id: id,
+			},
+			(err, data) => {
+				if (err) reject(err)
+				else {
+					resolve(data)
+				}
+			}
+		)
+	})
 }
 
 module.exports = router
