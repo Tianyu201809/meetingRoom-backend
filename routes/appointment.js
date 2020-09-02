@@ -3,10 +3,11 @@
  */
 const express = require('express')
 const router = express.Router()
-const Appoint = require('../models/appointment')
 const qs = require('qs')
 const appointment = require('../models/appointment')
-const jwt = require('jsonwebtoken')
+const dayjs = require('dayjs')
+var utc = require('dayjs/plugin/utc')
+dayjs.extend(utc)
 
 /**
  * 获取预约信息接口
@@ -16,7 +17,7 @@ const jwt = require('jsonwebtoken')
 //用于会议预约查询页面
 router.post('/getAppoList', function (req, res, next) {
 	//1.通过传递过来的参数，查询所有预约信息
-	let query = req.body.data.filter //获取url地址上的参数 query是查询条件
+	let query = req.body.data.filter //
 	let limit = req.body.data.limit
 	let skip = req.body.data.skip
 	//2.查询mongodb中的信息
@@ -35,6 +36,8 @@ async function queryAppoList(
 	skip = 0,
 	limit = 10
 ) {
+	const newMeetingDate = dayjs.utc(meetingDate).format()
+
 	return new Promise((resolve, reject) => {
 		// {
 		//     $and: [
@@ -44,15 +47,17 @@ async function queryAppoList(
 		//     ],
 		// }
 		let filterVal = {
-			title,
-			meetingDate,
-			meetingRoomNumber,
+			title: {
+				$regex: title,
+			},
+			appointDate: newMeetingDate,
+			meetingRoomNumber: meetingRoomNumber,
 		}
 		if (!title) {
 			delete filterVal.title
 		}
 		if (!meetingDate) {
-			delete filterVal.meetingDate
+			delete filterVal.appointDate
 		}
 		if (!meetingRoomNumber) {
 			delete filterVal.meetingRoomNumber
@@ -76,26 +81,86 @@ async function queryAppoList(
 router.post('/createAppointment', function (req, res, next) {
 	//1.通过传递过来的参数，查询所有预约信息
 	//2.查询mongodb中的信息
-	const parms = req.body ? new Appoint(req.body) : null
+	const parms = req.body ? new appointment(req.body) : null
 	if (!parms) return '添加预约失败，请填写正确参数'
 	createAppointment(parms)
 		.then(function (msg) {
-			res.send(msg)
+			res.send({
+				code: 200,
+				data: msg,
+			})
 		})
 		.catch(function (e) {
-			res.send(e)
+			res.send({
+				code: 400,
+				data: e,
+			})
 		})
 })
 //插入会议预约信息
 async function createAppointment(item) {
+	let meetingRoomNumber = item.meetingRoomNumber
+	let appointDate = item.appointDate
+	let startTime = new Date(item.startTime)
+	let endTime = new Date(item.endTime)
 	return new Promise(function (resolve, reject) {
-		Appoint.create(item, function (err, docs) {
-			if (err) {
-				reject('会议预定失败')
-			} else {
-				resolve('会议预定成功')
+		//首先进行查询，判断需要添加的数据是否符合规则
+		//1.时间无覆盖
+		/**
+         *  每提交一个新预定时间段，扫描一遍数据库，
+            设当前扫du描的已经预订的时zhi间段[used_start,used_end]，
+            看提交数据的[want_start,want_end]是否dao满足与[used_start,used_end]相交,
+            若want_start<used_end && wang_end>used_start表明两个区间相交，则输出不能预定；
+            否则，若不相交，再查看下一个数据库里的已预订时间，重复该过程。
+            最终，都不相交的话，即可预定。
+         */
+
+		//查询当天所有该会议室的预定记录
+		appointment.find(
+			{
+				meetingRoomNumber,
+				appointDate,
+			},
+			(err, data) => {
+				if (err) reject(err)
+				else {
+					if (data.length === 0) {
+						//说明今天没有预约的会议
+						//直接进行数据插入
+						appointment.create(item, function (err, docs) {
+							if (err) {
+								reject('会议预定失败')
+							} else {
+								resolve('会议预定成功')
+							}
+						})
+					} else {
+						//扫描输出结果，查看已经预约的会议与需要预约的会议是否存在时间交集
+						//如果有时间交集，则不能进行数据插入
+						let b = true //标记字段，默认不存在交集时间
+						data.forEach((element) => {
+							const _st = new Date(element.startTime)
+							const _et = new Date(element.endTime)
+							if (startTime < _et && endTime > _st) {
+								b = false //存在交集时间
+							}
+						})
+						if (b) {
+							//不存在交集时间，插入数据
+							appointment.create(item, function (err, docs) {
+								if (err) {
+									reject('会议预定失败')
+								} else {
+									resolve('会议预定成功')
+								}
+							})
+						} else {
+							reject('当前所选时间已经被占用，请重新选择预约时间')
+						}
+					}
+				}
 			}
-		})
+		)
 	})
 }
 
@@ -138,17 +203,73 @@ async function deleteAppoItems(_itemId) {
 }
 
 /**
- * 修改预约信息接口
+ * 修改预约信息接口,作用于预约管理页
  */
-router.post('/updateAppoItem', function (req, res, next) {
-	//1.通过传递过来的参数，查询所有预约信息
-	//2.查询mongodb中的信息
+router.post('/updateAppointmentItem', function (req, res, next) {
+	const id = req.body.id
+	const obj = req.body.obj
+	updateAppointmentItem(id, obj)
+		.then((data) => {
+			res.send({
+				code: 200,
+				data: data,
+			})
+		})
+		.catch((e) => {
+			res.send({
+				code: 400,
+				data: e,
+			})
+		})
 })
 
+async function updateAppointmentItem(id, obj) {
+	return new Promise((resolve, reject) => {
+		appointment.updateOne({ _id: id }, { $set: obj }, (err, result) => {
+			if (err) reject(err)
+			else {
+				resolve(result)
+			}
+		})
+	})
+}
+
 /**
- * 数据库操作
- * @param {Object}} item
+ * 查询单条预约详情接口
  */
+
+router.get('/queryAppointmentDetail', function (req, res, next) {
+	const id = req.query.id
+	queryAppointmentDetail(id)
+		.then((data) => {
+			res.send({
+				code: 200,
+				data: data,
+			})
+		})
+		.catch((e) => {
+			res.send({
+				code: 400,
+				data: e,
+			})
+		})
+})
+async function queryAppointmentDetail(id) {
+	return new Promise((resolve, reject) => {
+		appointment.findOne(
+			{
+				_id: id,
+			},
+			(err, result) => {
+				if (err) {
+					reject(err)
+				} else {
+					resolve(result)
+				}
+			}
+		)
+	})
+}
 
 //获取查询的数据数量
 //查询所有的条目
@@ -168,18 +289,20 @@ router.get('/getQueryListCount', (req, res, next) => {
 async function getQueryDataCount({ title, meetingDate, meetingRoomNumber }) {
 	return new Promise(function (resolve, reject) {
 		const filter = {
-			title,
-			meetingDate,
+			title: {
+				$regex: title,
+			},
+			appointDate: meetingDate,
 			meetingRoomNumber,
 		}
 		//如果条件为空，则删除过滤条件
-		if (!filter.title) {
+		if (!title) {
 			delete filter.title
 		}
-		if (!filter.meetingDate) {
-			delete filter.meetingDate
+		if (!meetingDate) {
+			delete filter.appointDate
 		}
-		if (!filter.meetingRoomNumber) {
+		if (!meetingRoomNumber) {
 			delete filter.meetingRoomNumber
 		}
 		appointment.countDocuments(filter, function (err, result) {

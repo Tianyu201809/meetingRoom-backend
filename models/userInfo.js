@@ -13,13 +13,17 @@ const userInfo = new Schema({
 	status: String,
 	//创建日期
 	createdDate: {
-        type: Date,
-        default: Date.now,
+		type: Date,
+		default: Date.now,
 	},
 	//最后修改时间
 	modifyDate: {
 		type: Date,
 		default: Date.now,
+	},
+	role: {
+		type: Number,
+		default: 1, //1 普通用户  2高级管理员 3超级管理员
 	},
 })
 //直接导出模型构造函数

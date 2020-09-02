@@ -12,7 +12,7 @@ const appointment = new Schema({
 	status: String,
 	//订阅者
 	subscriber: {
-		type: String, //使用订阅者邮箱/用户名两个值
+		type: Object, //使用订阅者邮箱/用户名两个值
 	},
 	//创建人
 	createdBy: {
@@ -21,6 +21,7 @@ const appointment = new Schema({
 	//创建日期
 	createdDate: {
 		type: Date,
+		default: Date.now,
 	},
 	//预约概要
 	content: {
@@ -41,6 +42,7 @@ const appointment = new Schema({
 	//参会成员
 	members: {
 		type: Array,
+		default: [],
 	},
 	//最后修改人
 	modifyBy: {

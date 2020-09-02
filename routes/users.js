@@ -78,7 +78,7 @@ router.post('/register', function (req, res, next) {
 })
 
 router.post('/login', async function (req, res, next) {
-    const {userName, password, email} = req.body;
+	const { userName, password, email } = req.body
 	if (userName) {
 		const userInfo = await getPasswordByNameAndEmail(req.body)
 		if (!password || userInfo !== password) {
@@ -134,7 +134,7 @@ router.get('/getUserEmail', function (req, res, next) {
 				mes: 'success',
 				code: 200,
 				data: {
-					email
+					email,
 				},
 			})
 		})
@@ -143,7 +143,7 @@ router.get('/getUserEmail', function (req, res, next) {
 				mes: e,
 				code: 400,
 				data: {
-					email: null
+					email: null,
 				},
 			})
 		})
@@ -157,7 +157,7 @@ async function getEmailByName(userName) {
 	return new Promise((resolve, reject) => {
 		userInfo
 			.findOne({
-				userName:userName
+				userName: userName,
 			})
 			.then((result) => {
 				if (result) {
@@ -173,16 +173,53 @@ async function getPasswordByNameAndEmail({ userName, email }) {
 	return new Promise((resolve, reject) => {
 		userInfo
 			.findOne({
-				userName:userName
+				userName: userName,
 			})
 			.then((result) => {
-                console.log(result)
+				console.log(result)
 				resolve(result.password)
 			})
 			.catch((e) => {
 				console.log(e)
 				resolve(null)
 			})
+	})
+}
+
+/**
+ * 查询当前登录用户的权限
+ */
+
+router.get('/queryUserRole', (req, res, next) => {
+	const userName = req.query.userName
+	queryUserRole(userName)
+		.then((role) => {
+			res.send({
+				code: 200,
+				data: role,
+			})
+		})
+		.catch((e) => {
+			res.send({
+				code: 400,
+				data: e,
+			})
+		})
+})
+async function queryUserRole(userName) {
+	return new Promise((resolve, reject) => {
+		userInfo.findOne(
+			{
+				userName,
+			},
+			(err, result) => {
+				if (err) reject(false)
+				else {
+					const role = result.role
+					resolve(role)
+				}
+			}
+		)
 	})
 }
 module.exports = router
