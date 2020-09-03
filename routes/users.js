@@ -150,7 +150,7 @@ router.get('/getUserEmail', function (req, res, next) {
 })
 
 /**
- * 获取用户邮箱地址
+ * 获取用户邮箱接口
  * @param {string} userName
  */
 async function getEmailByName(userName) {
@@ -222,4 +222,36 @@ async function queryUserRole(userName) {
 		)
 	})
 }
+
+/**
+ * 获取用户列表接口
+ */
+router.get('/queryUserList', (req, res, next) => {
+	const group = req.query.group
+	queryUserList(group)
+		.then((userList) => {
+			res.send({
+				code: 200,
+				data: userList,
+			})
+		})
+		.catch((e) => {
+			res.send({
+				code: 400,
+				data: e,
+			})
+		})
+})
+async function queryUserList(group) {
+	group ? group : null
+	return new Promise((resolve, reject) => {
+		userInfo.find(group, (err, data) => {
+			if (err) reject(err)
+			else {
+				resolve(data)
+			}
+		})
+	})
+}
+
 module.exports = router

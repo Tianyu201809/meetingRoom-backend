@@ -13,6 +13,9 @@ const appointment = new Schema({
 	//订阅者
 	subscriber: {
 		type: Object, //使用订阅者邮箱/用户名两个值
+		default: function () {
+			return {}
+		},
 	},
 	//创建人
 	createdBy: {

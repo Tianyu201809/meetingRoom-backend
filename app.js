@@ -43,15 +43,14 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.all('*', (req, res, next) => {
 	res.header('Access-Control-Allow-Origin', '*')
 	res.header('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type')
-    res.header('Access-Control-Allow-Methods', 'PUT,POST,GET,DELETE,OPTIONS')
-    if(req.method == 'OPTIONS'){
-         //让options请求快速返回
-         //options请求是“非简单请求”，请求之前会发送options预检请求
-         res.sendStatus(200);
-    }else{
-        next()
-    }
-	
+	res.header('Access-Control-Allow-Methods', 'PUT,POST,GET,DELETE,OPTIONS')
+	if (req.method == 'OPTIONS') {
+		//让options请求快速返回
+		//options请求是“非简单请求”，请求之前会发送options预检请求
+		res.sendStatus(200)
+	} else {
+		next()
+	}
 })
 
 //请求接口时需要token，白名单的接口不需要token
@@ -67,7 +66,7 @@ app.all('*', function (req, res, next) {
 		if (!token) {
 			res.status(401).send('there is no token, please login')
 		} else {
-            //token验证函数，验证token是否有效 
+			//token验证函数，验证token是否有效
 			jwt.verify(token, 'abcd', (error, decode) => {
 				if (error) {
 					res.send({
@@ -76,7 +75,7 @@ app.all('*', function (req, res, next) {
 						data: {},
 					})
 				} else {
-                    //将请求对象中的userName属性设置值
+					//将请求对象中的userName属性设置值
 					req.userName = decode.name
 					next()
 				}
@@ -106,7 +105,7 @@ app.use(function (err, req, res, next) {
 
 //设置的白名单接口列表
 const whiteListUrl = {
-	get: ['/getUserInfo', '/users/getUserEmail/'],
+	get: ['/getUserInfo', '/users/getUserEmail/', '/users/queryUserList'],
 	post: ['/users/login/', '/users/register/', '/users/getUserEmail/'],
 	options: ['/users/login/', '/users/register/', '/users/getUserEmail/'],
 }

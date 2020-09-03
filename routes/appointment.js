@@ -141,7 +141,10 @@ async function createAppointment(item) {
 						data.forEach((element) => {
 							const _st = new Date(element.startTime)
 							const _et = new Date(element.endTime)
-							if (startTime < _et && endTime > _st) {
+							if (
+								(startTime < _et && endTime > _st) ||
+								(_st == startTime && _et == endTime)
+							) {
 								b = false //存在交集时间
 							}
 						})
