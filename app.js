@@ -8,6 +8,7 @@ var jwt = require('jsonwebtoken')
 var appointRouter = require('./routes/appointment')
 var usersRouter = require('./routes/users')
 var meetingRoomRouter = require('./routes/meetingRoom')
+var notificationRouter = require('./routes/notification')
 
 var app = express()
 
@@ -87,6 +88,7 @@ app.all('*', function (req, res, next) {
 app.use('/users', usersRouter)
 app.use('/appointment', appointRouter)
 app.use('/meetingRoom', meetingRoomRouter)
+app.use('/notification', notificationRouter)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
