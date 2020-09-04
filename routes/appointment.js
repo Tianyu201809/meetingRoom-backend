@@ -378,15 +378,13 @@ router.get('/queryUserJoinedMeetingCount', (req, res, next) => {
 })
 
 //作用于index页面中的今日会议部分的分页
-async function queryUserJoinedMeetingCount({ meetingDate, email }) {
+async function queryUserJoinedMeetingCount({ meetingDate, userName }) {
 	return new Promise((resolve, reject) => {
 		appointment.countDocuments(
 			{
-				meetingDate: meetingDate,
+				appointDate: dayjs.utc(meetingDate).format(),
 				members: {
-					$elemMatch: {
-						email: email,
-					},
+					$in: userName,
 				},
 			},
 			(err, result) => {
@@ -424,7 +422,7 @@ router.get('/queryUserJoinedMeetingItems', (req, res, next) => {
 
 //查询函数
 async function queryUserJoinedMeetingItems({
-	email,
+	userName,
 	meetingDate,
 	skip = 0,
 	limit = 3,
@@ -432,8 +430,10 @@ async function queryUserJoinedMeetingItems({
 	return new Promise((resolve, reject) => {
 		appointment
 			.find({
-				email: email,
-				meetingDate: meetingDate,
+				members: {
+					$in: userName,
+				},
+				appointDate: dayjs.utc(meetingDate).format(),
 			})
 			.skip(parseInt(skip))
 			.limit(parseInt(limit))

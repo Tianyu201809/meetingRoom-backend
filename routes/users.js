@@ -59,20 +59,43 @@ router.post('/register', function (req, res, next) {
 				code: 400,
 			})
 		} else {
-			userInfo.create(user, (err, response) => {
-				if (err) {
-					res.send({
-						code: 401,
-						mes: '用户注册失败，请重新填写信息注册',
-					})
-				} else {
-					console.log('用户数据插入成功' + response)
-					res.status(200).send({
-						code: 200,
-						mes: '用户注册成功, 请返回登录页登录',
-					})
+			userInfo.findOne(
+				{
+					userName,
+				},
+				(err, userData) => {
+					if (err) {
+						return res.json({
+							msg: '用户名检查失败',
+							code: 400,
+						})
+					}
+
+					//新增用户名逻辑
+					if (userData.length !== 0) {
+						//说明存在用户名
+						return res.json({
+							msg: '该用户名已经被占用，请修改用户名',
+							code: 400,
+						})
+					} else {
+						userInfo.create(user, (err, response) => {
+							if (err) {
+								res.send({
+									code: 401,
+									mes: '用户注册失败，请重新填写信息注册',
+								})
+							} else {
+								console.log('用户数据插入成功' + response)
+								res.status(200).send({
+									code: 200,
+									mes: '用户注册成功, 请返回登录页登录',
+								})
+							}
+						})
+					}
 				}
-			})
+			)
 		}
 	})
 })
