@@ -2,6 +2,11 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const notification = new Schema({
 	title: String,
+	/**
+	 * department有两个值
+	 * 1.编号
+	 * 2.名称
+	 */
 	department: {
 		type: Object,
 		default: function () {
@@ -18,7 +23,7 @@ const notification = new Schema({
 		type: Date,
 	},
 	status: {
-		type: Number, //0代表未发布， 1代表已发布， 2代表其他
+		type: Number, //0代表未发布， 1代表已发布， 2已撤销
 		default: function () {
 			return 0
 		},

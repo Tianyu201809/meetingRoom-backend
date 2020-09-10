@@ -9,6 +9,7 @@ var appointRouter = require('./routes/appointment')
 var usersRouter = require('./routes/users')
 var meetingRoomRouter = require('./routes/meetingRoom')
 var notificationRouter = require('./routes/notification')
+var uploadRouter = require('./routes/upload')
 
 var app = express()
 
@@ -89,6 +90,7 @@ app.use('/users', usersRouter)
 app.use('/appointment', appointRouter)
 app.use('/meetingRoom', meetingRoomRouter)
 app.use('/notification', notificationRouter)
+app.use('/upload', uploadRouter)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -108,7 +110,7 @@ app.use(function (err, req, res, next) {
 //设置的白名单接口列表
 const whiteListUrl = {
 	get: ['/getUserInfo', '/users/getUserEmail/', '/users/queryUserList'],
-	post: ['/users/login/', '/users/register/', '/users/getUserEmail/'],
+	post: ['/users/login/', '/users/register/', '/users/getUserEmail/', '/upload/uploadMeetingFile'],
 	options: ['/users/login/', '/users/register/', '/users/getUserEmail/'],
 }
 const hasOneOf = (str, arr) => {
