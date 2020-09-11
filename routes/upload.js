@@ -9,13 +9,14 @@ const uploadMappingTable = require('../models/uploadMappingTable')
 const { resolve } = require('path')
 
 class uploadFileObjTemp {
-	constructor() {
-		this.appointmentID = obj.appointmentID || ''
-		this.fileType = obj.fileType || ''
-		this.originalname = obj.originalname || ''
-		this.fileName = obj.fileName || ''
-		this.fileSize = obj.fileSize || ''
+	constructor(obj) {
+		this.appointmentID = obj.appointmentID || '' //appointmentID
+		this.filetype = obj.filename.split('.').slice(-1)[0] || '' //文件类型
+		this.originalname = obj.originalname || '' //原始文件名
+		this.filename = obj.filename || '' //文件名
+		this.filesize = obj.size || ''
 		this.encoding = obj.encoding || ''
+		this.url = obj.path || ''
 	}
 }
 router.post(
@@ -41,7 +42,6 @@ router.post(
 		// }
 		mappingFileItems(files)
 			.then((result) => {
-				console.log(result)
 				res.send(result)
 			})
 			.catch((e) => {
@@ -60,19 +60,25 @@ async function mappingFileItems(files) {
 		for (let i = 0; i < files.length; i++) {
 			array[i] = new Promise(function (resolve, reject) {
 				uploadMappingTable.create(
-					new uploadMappingTable(files[i]),
+					new uploadFileObjTemp(files[i]),
 					(err, result) => {
 						if (err)
 							reject({
-								fileName: files[i].fileName,
+								// fileName: files[i].filename,
+								// originalname: files[i].originalname,
+								// url: files[i].url,
 								code: 400,
-								data: '映射数据添加失败',
+								data: err,
+								mes: '添加失败',
 							})
 						else {
 							resolve({
-								fileName: files[i].fileName,
+								// fileName: files[i].filename,
+								// originalname: files[i].originalname,
+								// url: files[i].url,
 								code: 200,
-								data: '映射数据添加成功',
+								data: result,
+								mes: '数据添加成功',
 							})
 						}
 					}
@@ -99,8 +105,9 @@ async function createFileMappingItems(file) {
 	return new Promise((resolve, reject) => {})
 }
 
+//文件下载接口
 router.get('/download', (req, res) => {
-	const url = req.params.url
+	const url = req.params.url //这里传递的是ori文件名
 	url
 		? res.dpwnload(`upload/${url}`)
 		: res.send({
@@ -109,4 +116,102 @@ router.get('/download', (req, res) => {
 		  })
 })
 
+/**
+ * 文件查询接口
+ */
+router.get('/queryAppointmentFiles', (req, res) => {
+	//首先获取appointmentID
+	const appointmentID = req.query.id
+	//查询该appointment上所含有的所有文件
+	queryAppointmentFiles(appointmentID)
+		.then((result) => {
+			res.send({
+				code: 200,
+				data: result,
+			})
+		})
+		.catch((e) => {
+			res.send({
+				code: 400,
+				data: e,
+			})
+		})
+})
+async function queryAppointmentFiles(appointmentID) {
+	return new Promise((resolve, reject) => {
+		uploadMappingTable.find(
+			{
+				appointmentID,
+			},
+			(err, result) => {
+				if (err) reject(err)
+				else {
+					resolve(result)
+				}
+			}
+		)
+	})
+}
+
+/**
+ * 删除文件接口
+ */
+
+//删除文件分成两个部分
+//1.删除表格中的记录
+//2.删除文件目录中的文件
+router.post('/removeAppointmentFile', (req, res, next) => {
+	const formId = req.body.id
+	const url = req.body.url
+	Promise.all(
+		[removeDatabaseItem(formId), removeDocument(url)].map(async (p) => {
+			try {
+				return p
+			} catch (e) {
+				return e
+			}
+		})
+	)
+		.then((result) => {
+			res.send({
+				code: 200,
+				data: result,
+			})
+		})
+		.catch((e) => {
+			res.send({
+				code: 400,
+				data: e,
+			})
+		})
+})
+
+async function removeDatabaseItem(id) {
+	return new Promise((resolve, reject) => {
+		uploadMappingTable.deleteOne({ _id: id }, (err, data) => {
+			if (err) reject(err)
+			else {
+				resolve(data)
+			}
+		})
+	})
+}
+
+async function removeDocument(url) {
+	return new Promise((resolve, reject) => {
+		fs.unlink(url, function (error) {
+			if (error) {
+				console.log(error)
+				reject({
+					code: 400,
+					mes: '文件删除失败',
+				})
+			}
+			resolve({
+				code: 200,
+				mes: '文件删除成功',
+			})
+		})
+	})
+}
 module.exports = router

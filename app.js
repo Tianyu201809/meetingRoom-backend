@@ -110,7 +110,13 @@ app.use(function (err, req, res, next) {
 //设置的白名单接口列表
 const whiteListUrl = {
 	get: ['/getUserInfo', '/users/getUserEmail/', '/users/queryUserList'],
-	post: ['/users/login/', '/users/register/', '/users/getUserEmail/', '/upload/uploadMeetingFile'],
+	post: [
+		'/users/login/',
+		'/users/register/',
+		'/users/getUserEmail/',
+		'/upload/uploadMeetingFile',
+		'/upload/removeAppointmentFile',
+	],
 	options: ['/users/login/', '/users/register/', '/users/getUserEmail/'],
 }
 const hasOneOf = (str, arr) => {
