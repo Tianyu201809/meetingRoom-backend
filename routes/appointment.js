@@ -448,4 +448,63 @@ async function queryUserJoinedMeetingItems({
 	})
 }
 
+/**
+ * 获取所有部门的会议情况数据
+ */
+router.get('/getAppointmentNumberListByDept', (req, res, next) => {
+	getAppointmentNumberListByDept()
+		.then((result) => {
+			res.send({
+				code: 200,
+				data: result,
+			})
+		})
+		.catch((error) => {
+			res.send({
+				code: 400,
+				data: error,
+			})
+		})
+})
+
+async function getAppointmentNumberListByDept() {
+	return new Promise((resolve, reject) => {
+		appointment.find({}, (err, result) => {
+			if (err) reject(err)
+			else {
+				//整理全部数据，分离出各个部门的会议数量
+				const array = []
+				const developCount = result.filter((item) => {
+					return item.department == '00010'
+				}).length
+
+				const saleCount = result.filter((item) => {
+					return item.department == '00020'
+				}).length
+
+				const hrPart = result.filter((item) => {
+					return item.department == '00030'
+				}).length
+				array[0] = {
+					department: '技术开发部',
+					code: '00010',
+					data: developCount,
+				}
+				array[1] = {
+					department: '产品销售部',
+					code: '00020',
+					data: saleCount,
+				}
+				array[2] = {
+					department: '人事部',
+					code: '00030',
+					data: hrPart,
+				}
+
+				resolve(array)
+			}
+		})
+	})
+}
+
 module.exports = router

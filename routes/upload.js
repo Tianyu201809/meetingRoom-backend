@@ -106,10 +106,19 @@ async function createFileMappingItems(file) {
 }
 
 //文件下载接口
-router.get('/download', (req, res) => {
-	const url = req.params.url //这里传递的是ori文件名
+router.post('/download', (req, res) => {
+	const url = req.body.url //这里传递的是ori文件名
+	const filename = req.body.filename
 	url
-		? res.dpwnload(`upload/${url}`)
+		? res
+				.status(200)
+				.set({
+					'Context-Type': 'text/html',
+					'Content-Disposition': `attachment; filename=${encodeURI(
+						filename
+					)}`,
+				})
+				.download(url, filename)
 		: res.send({
 				status: false,
 				data: '没有找到文件',
