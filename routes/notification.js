@@ -40,8 +40,8 @@ async function cerateNotification(obj) {
  * 查询通知显示信息
  */
 router.get('/queryNotification', (req, res, next) => {
-	const { department, limit = 10, skip = 0 } = qs.parse(req.query)
-	queryNotification(department, limit, skip)
+	const { department, limit = 10, skip = 0, sort = 1 } = qs.parse(req.query)
+	queryNotification(department, limit, skip, sort)
 		.then((result) => {
 			res.send({
 				code: 200,
@@ -55,7 +55,7 @@ router.get('/queryNotification', (req, res, next) => {
 			})
 		})
 })
-async function queryNotification(department, limit, skip) {
+async function queryNotification(department, limit, skip, sort) {
 	return new Promise((resolve, reject) => {
 		let filter = {}
 		if (department) {
@@ -68,6 +68,9 @@ async function queryNotification(department, limit, skip) {
 
 		notification
 			.find(filter)
+			.sort({
+				_id: parseInt(sort),
+			})
 			.skip(parseInt(skip))
 			.limit(parseInt(limit))
 			.exec((err, result) => {
