@@ -72,7 +72,7 @@ router.post('/register', function (req, res, next) {
 					}
 
 					//新增用户名逻辑
-					if (userData.length !== 0) {
+					if (userData && userData.length !== 0) {
 						//说明存在用户名
 						return res.json({
 							msg: '该用户名已经被占用，请修改用户名',
