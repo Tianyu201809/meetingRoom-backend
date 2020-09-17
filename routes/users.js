@@ -277,4 +277,48 @@ async function queryUserList(group) {
 	})
 }
 
+/**
+ * 修改密码接口
+ */
+
+router.post('/modifyPassword', async function (req, res, next) {
+	const userName = req.body.userName
+	const pwd = await getPasswordByNameAndEmail(req.body) //用户当前的密码
+	const password = req.body.password //用户填写的传入密码
+	const newPassword = req.body.newPassword //用户填写的修改后的密码
+	if (!password || pwd !== password) {
+		res.send({
+			code: 400,
+			data: '原始密码不正确',
+		})
+	} else {
+		modifyPassword(userName, newPassword)
+			.then((result) => {
+				res.send({
+					code: 200,
+					data: '用户密码修改成功',
+				})
+			})
+			.catch((e) => {
+				res.send({
+					code: 400,
+					data: '用户密码修改失败',
+				})
+			})
+	}
+})
+async function modifyPassword(userName, newPassword) {
+	return new Promise((resolve, reject) => {
+		userInfo.updateOne(
+			{ userName: userName },
+			{ $set: { password: newPassword } },
+			(err, data) => {
+				if (err) reject(err)
+				else {
+					resolve(data)
+				}
+			}
+		)
+	})
+}
 module.exports = router
