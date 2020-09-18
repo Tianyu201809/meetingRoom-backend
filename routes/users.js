@@ -5,6 +5,7 @@ var express = require('express')
 var router = express.Router()
 const jwt = require('jsonwebtoken')
 const userInfo = require('../models/userInfo')
+const qs = require('qs')
 
 /* GET users listing. */
 router.get('/', function (req, res, next) {
@@ -12,8 +13,9 @@ router.get('/', function (req, res, next) {
 })
 
 router.get('/getUserInfo', function (req, res, next) {
-	//const userName = req.body.userName
-	const { userName, email } = req.body.userInfo
+    //const userName = req.body.userName
+    const userInfoParam = qs.parse(req.query)
+	const { userName, email } = userInfoParam
 	//调用数据库查询方法，查询
 	userInfo.findOne(
 		{
