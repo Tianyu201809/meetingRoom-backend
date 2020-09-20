@@ -7,6 +7,7 @@ const userInfo = new Schema({
 	age: Number,
 	birthday: String,
 	location: String,
+	phone: String,
 	avatar: {
 		type: Buffer,
 	},

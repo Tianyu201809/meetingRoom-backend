@@ -5,6 +5,7 @@ var express = require('express')
 var router = express.Router()
 const jwt = require('jsonwebtoken')
 const userInfo = require('../models/userInfo')
+const dayjs = require('dayjs')
 const qs = require('qs')
 
 /* GET users listing. */
@@ -13,8 +14,8 @@ router.get('/', function (req, res, next) {
 })
 
 router.get('/getUserInfo', function (req, res, next) {
-    //const userName = req.body.userName
-    const userInfoParam = qs.parse(req.query)
+	//const userName = req.body.userName
+	const userInfoParam = qs.parse(req.query)
 	const { userName, email } = userInfoParam
 	//调用数据库查询方法，查询
 	userInfo.findOne(
@@ -159,7 +160,8 @@ router.get('/getUserEmail', function (req, res, next) {
 				mes: 'success',
 				code: 200,
 				data: {
-					email,
+					email: email.email,
+					userId: email._id,
 				},
 			})
 		})
@@ -185,8 +187,11 @@ async function getEmailByName(userName) {
 				userName: userName,
 			})
 			.then((result) => {
+				let obj = {}
 				if (result) {
-					resolve(result.email)
+					obj['email'] = result.email
+					obj['_id'] = result._id
+					resolve(obj)
 				} else {
 					reject(false)
 				}
@@ -318,6 +323,49 @@ async function modifyPassword(userName, newPassword) {
 				if (err) reject(err)
 				else {
 					resolve(data)
+				}
+			}
+		)
+	})
+}
+
+/**
+ * 修改个人信息接口
+ */
+router.post('/updateUserInfo', (req, res, next) => {
+	const userId = req.body.id
+	const data = req.body.data
+	updateUserInfo(userId, data)
+		.then((result) => {
+			res.send({
+				code: 200,
+				data: result,
+			})
+		})
+		.catch((e) => {
+			res.send({
+				code: 400,
+				data: e,
+			})
+		})
+})
+
+/**
+ *
+ * @param {*String} userId
+ * @param {*Object} data
+ */
+async function updateUserInfo(userId, data) {
+	return new Promise((resolve, reject) => {
+		userInfo.updateOne(
+			{ _id: userId },
+			{
+				$set: data,
+			},
+			(err, result) => {
+				if (err) reject(err)
+				else {
+					resolve(result)
 				}
 			}
 		)

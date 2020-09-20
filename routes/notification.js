@@ -40,8 +40,14 @@ async function cerateNotification(obj) {
  * 查询通知显示信息
  */
 router.get('/queryNotification', (req, res, next) => {
-	const { department, limit = 10, skip = 0, sort = 1 } = qs.parse(req.query)
-	queryNotification(department, limit, skip, sort)
+	const {
+		department,
+		status = undefined,
+		limit = 10,
+		skip = 0,
+		sort = 1,
+	} = qs.parse(req.query)
+	queryNotification(department, status, limit, skip, sort)
 		.then((result) => {
 			res.send({
 				code: 200,
@@ -55,16 +61,34 @@ router.get('/queryNotification', (req, res, next) => {
 			})
 		})
 })
-async function queryNotification(department, limit, skip, sort) {
+async function queryNotification(department, status, limit, skip, sort) {
 	return new Promise((resolve, reject) => {
 		let filter = {}
-		if (department) {
+		//传递部门字段和状态字段
+		if (department && status) {
+			filter = {
+				department: {
+					departmentNumber: department,
+				},
+				status: parseInt(status),
+			}
+		}
+		//传递部门
+		if (department && !status) {
 			filter = {
 				department: {
 					departmentNumber: department,
 				},
 			}
 		}
+		//传递状态
+		if (!department && status) {
+			filter = {
+				status: parseInt(status),
+			}
+		}
+
+		//都不符合，过滤条件为空
 
 		notification
 			.find(filter)
@@ -86,8 +110,8 @@ async function queryNotification(department, limit, skip, sort) {
  * 查询通知数量
  */
 router.get('/queryNotificationCount', (req, res, next) => {
-	const { department } = req.query
-	queryNotificationCount(department)
+	const { department, status } = qs.parse(req.query)
+	queryNotificationCount(department, status)
 		.then((result) => {
 			res.send({
 				code: 200,
@@ -101,14 +125,29 @@ router.get('/queryNotificationCount', (req, res, next) => {
 			})
 		})
 })
-async function queryNotificationCount(department) {
+async function queryNotificationCount(department, status) {
 	return new Promise((resolve, reject) => {
-		const filter = {}
-		if (department) {
+		let filter = {}
+		if (department && status) {
 			filter = {
 				department: {
 					departmentNumber: department,
 				},
+				status: parseInt(status),
+			}
+		}
+		//传递部门
+		if (department && !status) {
+			filter = {
+				department: {
+					departmentNumber: department,
+				},
+			}
+		}
+		//传递状态
+		if (!department && status) {
+			filter = {
+				'status': parseInt(status),
 			}
 		}
 
@@ -137,7 +176,7 @@ router.post('/editNotification', (req, res, next) => {
 		})
 		.catch((e) => {
 			res.send({
-				code: 200,
+				code: 400,
 				data: e,
 			})
 		})
@@ -161,7 +200,7 @@ async function editNotification(_id, obj) {
 }
 
 /**
- * 撤销通知
+ * 撤销通知(未使用)
  */
 
 router.post('/revocateNotification', (req, res, next) => {
@@ -174,7 +213,7 @@ router.post('/revocateNotification', (req, res, next) => {
 		})
 		.catch((e) => {
 			res.send({
-				code: 200,
+				code: 400,
 				data: e,
 			})
 		})
