@@ -108,7 +108,7 @@ async function createAppointment(item) {
 		//1.时间无覆盖
 		/**
          *  每提交一个新预定时间段，扫描一遍数据库，
-            设当前扫du描的已经预订的时zhi间段[used_start,used_end]，
+            设当前扫描的已经预订的时间段[used_start,used_end]，
             看提交数据的[want_start,want_end]是否dao满足与[used_start,used_end]相交,
             若want_start<used_end && wang_end>used_start表明两个区间相交，则输出不能预定；
             否则，若不相交，再查看下一个数据库里的已预订时间，重复该过程。
